@@ -1,0 +1,11 @@
+stress.tests.fedora.core.port=8080
+stress.tests.fedora.core.username=fedoraAdmin
+stress.tests.fedora.core.password=
+stress.tests.threads.number=10
+stress.tests.objects.number=100
+stress.tests.object.datastream.size=2097152
+functional.tests.atmos.host=<your_atmos_host>
+functional.tests.atmos.port=<your_atmos_port>
+functional.tests.atmos.uid=<your_atmos_uid>
+functional.tests.atmos.secret=<your_atmos_secret>
+functional.tests.basedir=<your_fc_repository_base_directory>

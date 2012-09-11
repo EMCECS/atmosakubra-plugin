@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="atmosakubra" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<!-- ============================= PROPERTIES =================================================== -->
+
+	<!-- Main properties -->
+	<property environment="env" />
+
+	<property name="atmosakubra.version" value="1.0" />
+	<property name="atmosakubra.release" value="1" />
+	<property name="ivy.install.version" value="2.0.0-beta1" />
+	<dirname property="atmosakubra.basedir" file="${ant.file}" />
+	<property name="src.dir" value="${atmosakubra.basedir}/src/java" />
+	<property name="dist.dir" value="${atmosakubra.basedir}/dist" />
+	<property name="conf.dir" value="${atmosakubra.basedir}/conf" />
+	<property name="doc.dir" value="${atmosakubra.basedir}/doc" />
+	<property name="build.dir" value="${atmosakubra.basedir}/build" />
+	<property name="lib.dir" value="${atmosakubra.basedir}/lib" />
+	<property name="build.lib.dir" value="${build.dir}/lib" />
+	<property name="web.dir" value="${atmosakubra.basedir}/web" />
+	<property name="bin.dir" value="${atmosakubra.basedir}/bin" />
+	<property name="dist.dir" value="${atmosakubra.basedir}/dist" />
+	<property name="resources.dir" value="${atmosakubra.basedir}/src/resources" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="test.src.dir" value="${atmosakubra.basedir}/test/java" />
+	<property name="test.lib.dir" value="${lib.dir}/test" />
+	<property name="test.build.lib.dir" value="${build.lib.dir}/test" />
+	<property name="runtime.lib.dir" value="${lib.dir}/runtime" />
+	<property name="runtime.build.lib.dir" value="${build.lib.dir}/runtime" />
+	<property name="compile.lib.dir" value="${lib.dir}/compilation" />
+	<property name="compile.build.lib.dir" value="${build.lib.dir}/compile" />
+	<property name="test.classes.dir" value="${build.dir}/test/classes" />
+	<property name="test.resources.dir" value="${atmosakubra.basedir}/test/resources" />
+	<property name="javadoc.dir" value="${doc.dir}/api" />
+	<property name="ivy.jar.dir" value="${lib.dir}/ivy" />
+
+	<!-- Compiler options -->
+	<property name="compiler.debug" value="on" />
+	<property name="compiler.generate.no.warnings" value="off" />
+	<property name="compiler.args" value="" />
+	<property name="compiler.max.memory" value="128m" />
+
+	<patternset id="ignored.files">
+		<exclude name="**/.hg/**" />
+	</patternset>
+	<patternset id="library.patterns">
+		<include name="*.zip" />
+		<include name="*.war" />
+		<include name="*.egg" />
+		<include name="*.ear" />
+		<include name="*.swc" />
+		<include name="*.jar" />
+	</patternset>
+	<patternset id="compiler.resources">
+		<include name="**/?*.properties" />
+		<include name="**/?*.xml" />
+		<include name="**/?*.gif" />
+		<include name="**/?*.png" />
+		<include name="**/?*.jpeg" />
+		<include name="**/?*.jpg" />
+		<include name="**/?*.html" />
+		<include name="**/?*.dtd" />
+		<include name="**/?*.tld" />
+	</patternset>
+
+	<!-- Project Dependencies -->
+
+	<!-- Classpaths -->
+	<path id="compilation.classpath">
+		<fileset file="${compile.build.lib.dir}/**.jar" />
+		<fileset file="${runtime.lib.dir}/**.jar" />
+		<fileset file="${runtime.build.lib.dir}/**.jar" />
+	</path>
+	<path id="test.classpath">
+		<path refid="compilation.classpath" />
+		<fileset file="${test.build.lib.dir}/**.jar" />
+		<pathelement location="${test.classes.dir}" />
+		<pathelement location="${classes.dir}" />
+	</path>
+	<path id="ivy.lib.path">
+		<fileset dir="${ivy.jar.dir}" includes="*.jar" />
+	</path>
+
+	<!-- ============================= RESOLVE ====================================================== -->
+
+	<target name="resolve" description="--> retrieve dependencies with ivy">
+		<ivy:retrieve type="jar" pattern="${build.lib.dir}/[conf]/[artifact]-[revision].[ext]" />
+	</target>
+
+	<!-- ============================= INIT ========================================================= -->
+
+	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	<target name="define.build.user.1" if="env.ATMOS3PROXY_USER">
+		<property name="build.user" value="${env.ATMOS3PROXY_USER}" />
+	</target>
+
+	<target name="define.build.user.2" if="env.USER">
+		<property name="build.user" value="${env.USER}" />
+	</target>
+
+	<target name="define.build.user.3" if="env.USERNAME">
+		<property name="build.user" value="${env.USERNAME}" />
+	</target>
+
+	<target name="define.properties" depends="define.build.user.1, define.build.user.2, define.build.user.3">
+		<exec outputproperty="hostname" command="hostname" />
+		<property file="build-${hostname}-${build.user}.properties" />
+	</target>
+
+	<target name="init.properties" depends="define.properties">
+		<condition property="stress.tests.fedora.core.port" value="${stress.tests.fedora.core.port}" else="">
+			<isset property="stress.tests.fedora.core.port" />
+		</condition>
+		<condition property="stress.tests.fedora.core.username" value="${stress.tests.fedora.core.username}" else="">
+			<isset property="stress.tests.fedora.core.username" />
+		</condition>
+		<condition property="stress.tests.fedora.core.password" value="${stress.tests.fedora.core.password}" else="">
+			<isset property="stress.tests.fedora.core.password" />
+		</condition>
+		<condition property="stress.tests.threads.number" value="${stress.tests.threads.number}" else="">
+			<isset property="stress.tests.threads.number" />
+		</condition>
+		<condition property="stress.tests.objects.number" value="${stress.tests.objects.number}" else="">
+			<isset property="stress.tests.objects.number" />
+		</condition>
+		<condition property="stress.tests.object.datastream.size" value="${stress.tests.object.datastream.size}" else="">
+			<isset property="stress.tests.object.datastream.size" />
+		</condition>
+	</target>
+
+
+	<!-- ============================= COMPILATION ================================================== -->
+
+	<target name="compile" description="Compile modules" depends="resolve">
+		<mkdir dir="${classes.dir}" />
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
+			<compilerarg line="${compiler.args}" />
+			<classpath refid="compilation.classpath" />
+		</javac>
+		<copy todir="${classes.dir}">
+			<fileset dir="${src.dir}">
+				<patternset refid="compiler.resources" />
+				<type type="file" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile.tests" depends="compile" description="Compile tests">
+		<mkdir dir="${test.classes.dir}" />
+		<javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="true" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
+			<compilerarg line="${compiler.args}" />
+			<classpath refid="test.classpath" />
+		</javac>
+	</target>
+
+	<!-- ============================= BUILD =============================================== -->
+
+	<target name="dist" depends="compile" description="Builds jar for FC">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<mkdir dir="${build.dir}/plugin-jar/" />
+		<unjar dest="${build.dir}/plugin-jar/">
+			<fileset file="${runtime.lib.dir}/**.jar" />
+			<fileset file="${runtime.build.lib.dir}/**.jar" />
+		</unjar>
+		<copy todir="${build.dir}/plugin-jar/">
+			<fileset dir="${classes.dir}" />
+		</copy>
+		<jar jarfile="${dist.dir}/akubra-atmos-${atmosakubra.version}.${atmosakubra.release}.jar" basedir="${build.dir}/plugin-jar/">
+			<manifest>
+				<attribute name="Implementation-Version" value="${atmosakubra.version}-${atmosakubra.release}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+			</manifest>
+		</jar>
+		<copy file="${conf.dir}/akubra-llstore.xml" todir="${dist.dir}" />
+	</target>
+
+	<!-- ============================= TESTS ================================================ -->
+    <target name="init-tests" depends="define.properties">
+        <condition property="junit.debug.jvmarg.1" value="-Xdebug" else="-Ddummy">
+            <isset property="junit.debug"/>
+        </condition>
+        <condition property="junit.debug.jvmarg.2"
+                   value="-Xrunjdwp:transport=dt_socket,address=${junit.debug.port},server=y,suspend=y" else="-Ddummy">
+            <isset property="junit.debug.port"/>
+        </condition>
+    </target>
+
+    <target name="test" depends="unit.tests" />
+
+	<target name="unit.tests" depends="define.properties, init-tests, compile.tests" description="Runs unit tests">
+		<mkdir dir="${build.dir}/test_report/unit" />
+		<junit showoutput="no" haltonfailure="yes" fork="yes" dir="${build.dir}/test_report/unit" maxmemory="256M" printsummary="on">
+			<classpath>
+				<path refid="test.classpath" />
+				<pathelement path="${test.resources.dir}" />
+				<pathelement path="${conf.dir}" />
+			</classpath>
+			<assertions>
+				<enable package="com.emc" />
+			</assertions>
+            <jvmarg value="${junit.debug.jvmarg.1}"/>
+            <jvmarg value="${junit.debug.jvmarg.2}"/>
+			<test name="com.emc.atmosakubra.testsuits.AllUnitTests" haltonfailure="no" outfile="unit" fork="yes" todir="${build.dir}/test_report/unit">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<antcall target="generate-test-report">
+			<param name="test.report.dir" value="${build.dir}/test_report/unit" />
+		</antcall>
+	</target>
+
+	<target name="functional.tests" depends="clean, init.properties, compile.tests" description="Runs functional tests">
+		<mkdir dir="${build.dir}/fc-data" />
+		<mkdir dir="${build.dir}/test_report/functional" />
+		<copy todir="${build.dir}/fedora-home">
+			<fileset dir="${test.resources.dir}/fedora-home" />
+		</copy>
+		<replace file="${build.dir}/fedora-home/server/config/akubra-llstore.xml" token="your_atmos_host" value="${functional.tests.atmos.host}" />
+		<replace file="${build.dir}/fedora-home/server/config/akubra-llstore.xml" token="your_atmos_port" value="${functional.tests.atmos.port}" />
+		<replace file="${build.dir}/fedora-home/server/config/akubra-llstore.xml" token="your_atmos_uid" value="${functional.tests.atmos.uid}" />
+		<replace file="${build.dir}/fedora-home/server/config/akubra-llstore.xml" token="your_atmos_secret" value="${functional.tests.atmos.secret}" />
+		<replace file="${build.dir}/fedora-home/server/config/akubra-llstore.xml" token="your_atmos_basedir" value="${functional.tests.basedir}" />
+		<junit showoutput="no" haltonfailure="yes" fork="yes" dir="${build.dir}" maxmemory="512M" printsummary="on">
+			<classpath>
+				<path refid="test.classpath" />
+				<pathelement path="${test.resources.dir}" />
+				<pathelement path="${conf.dir}" />
+				<fileset file="${test.lib.dir}/**.jar" />
+			</classpath>
+			<assertions>
+				<enable package="com.emc" />
+			</assertions>
+			<env key="FEDORA_HOME" value="${test.resources.dir}/fedora-home" />
+			<jvmarg value="-Dfunctional.tests.atmos.host=${functional.tests.atmos.host}" />
+			<jvmarg value="-Dfunctional.tests.atmos.port=${functional.tests.atmos.port}" />
+			<jvmarg value="-Dfunctional.tests.atmos.uid=${functional.tests.atmos.uid}" />
+			<jvmarg value="-Dfunctional.tests.atmos.secret=${functional.tests.atmos.secret}" />
+			<jvmarg value="-Dfunctional.tests.basedir=${functional.tests.basedir}" />
+			<test name="com.emc.atmosakubra.testsuits.AllFunctionalTest" haltonfailure="no" outfile="functional" fork="yes" todir="${build.dir}/test_report/functional">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<antcall target="generate-test-report">
+			<param name="test.report.dir" value="${build.dir}/test_report/functional" />
+		</antcall>
+	</target>
+
+	<target name="stress.tests" depends="init.properties, compile.tests" description="Runs Stress tests">
+		<mkdir dir="${build.dir}/test_report/stress" />
+		<junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${build.dir}" maxmemory="256M" printsummary="on">
+			<classpath>
+				<path refid="test.classpath" />
+				<pathelement path="${test.resources.dir}" />
+			</classpath>
+			<assertions>
+				<enable package="com.emc" />
+			</assertions>
+			<jvmarg value="-Dfedora.core.port=${stress.tests.fedora.core.port}" />
+			<jvmarg value="-Dfedora.core.username=${stress.tests.fedora.core.username}" />
+			<jvmarg value="-Dfedora.core.password=${stress.tests.fedora.core.password}" />
+			<jvmarg value="-Dstress.tests.threads.number=${stress.tests.threads.number}" />
+			<jvmarg value="-Dstress.tests.objects.number=${stress.tests.objects.number}" />
+			<jvmarg value="-Dstress.tests.object.datastream.size=${stress.tests.object.datastream.size}" />
+			<test name="com.emc.atmosakubra.testsuits.AllStressTests" haltonfailure="no" outfile="stress" fork="yes" todir="${build.dir}/test_report/stress">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<antcall target="generate-test-report">
+			<param name="test.report.dir" value="${build.dir}/test_report/stress" />
+		</antcall>
+	</target>
+
+	<target name="generate-test-report" if="test.report.dir">
+		<junitreport todir="${test.report.dir}">
+			<fileset dir="${test.report.dir}">
+				<include name="*.xml" />
+			</fileset>
+			<report todir="${test.report.dir}" format="frames" />
+		</junitreport>
+	</target>
+	<!-- ============================= DOCUMENTATION ================================================ -->
+
+	<target name="javadoc" description="Generate atmosakubra javadoc">
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="atmosakubra" doctitle="atmosakubra" Public="yes">
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+			<fileset dir="${src.dir}" />
+			<group title="Atmos Akubra Plugin">
+				<package name="com.emc.atmosakubra*" />
+			</group>
+			<group title="Esu API">
+				<package name="com.emc.esu.api*" />
+			</group>
+			<group title="Hadoop Retry API">
+				<package name="org.apache.hadoop.io.retry" />
+			</group>
+		</javadoc>
+	</target>
+
+	<!-- ============================= OTHER ======================================================== -->
+	<target name="clean" description="cleanup all">
+		<delete dir="${javadoc.dir}" />
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="all" depends="clean, compile" description="build all" />
+
+</project>
