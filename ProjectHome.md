@@ -1,0 +1,2 @@
+The Akubra plugin for Atmos lets Fedora Commons integrate with Atmos storage system. Using this plugin, a Fedora Commons installation can use an Atmos storage installation in the backend for storing FOXML and/or data blobs on Atmos.
+This plugin utilizes the talks to Atmos via the Atmos REST API.
